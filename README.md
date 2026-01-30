@@ -27,15 +27,30 @@ Create `.env.local`:
 NEXT_PUBLIC_API_URL=http://localhost:8000
 ```
 
+### Pre-push Hook (Optional)
+
+Run CI checks automatically before each push:
+
+```bash
+cat > .git/hooks/pre-push << 'EOF'
+#!/bin/bash
+./scripts/ci-local.sh
+EOF
+chmod +x .git/hooks/pre-push
+```
+
 ## Commands
 
-| Command            | Description      |
-| ------------------ | ---------------- |
-| `npm run dev`      | Start dev server |
-| `npm run build`    | Production build |
-| `npm run lint`     | Run ESLint       |
-| `npm test`         | Run unit tests   |
-| `npm run test:e2e` | Run E2E tests    |
+| Command                 | Description               |
+| ----------------------- | ------------------------- |
+| `npm run dev`           | Start dev server          |
+| `npm run build`         | Production build          |
+| `npm run lint`          | Run ESLint                |
+| `npm run typecheck`     | Run TypeScript checks     |
+| `npm run format:check`  | Check Prettier format     |
+| `npm test`              | Run unit tests            |
+| `npm run test:e2e`      | Run E2E tests             |
+| `./scripts/ci-local.sh` | Run all CI checks locally |
 
 ## Backend
 
