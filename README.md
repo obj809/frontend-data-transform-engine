@@ -1,8 +1,11 @@
 # Data Transform Engine Frontend
 
 ![CI](https://github.com/obj809/frontend-data-transform-engine/actions/workflows/ci.yml/badge.svg)
+[![Deploy](https://img.shields.io/github/deployments/obj809/frontend-data-transform-engine/production?label=vercel&logo=vercel)](https://frontend-data-transform-engine.vercel.app)
 
 Next.js frontend for file processing and data transformation operations.
+
+**Live:** [frontend-data-transform-engine.vercel.app](https://frontend-data-transform-engine.vercel.app)
 
 ## Tech Stack
 
