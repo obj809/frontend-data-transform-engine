@@ -29,13 +29,13 @@ NEXT_PUBLIC_API_URL=http://localhost:8000
 
 ## Commands
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start dev server |
-| `npm run build` | Production build |
-| `npm run lint` | Run ESLint |
-| `npm test` | Run unit tests |
-| `npm run test:e2e` | Run E2E tests |
+| Command            | Description      |
+| ------------------ | ---------------- |
+| `npm run dev`      | Start dev server |
+| `npm run build`    | Production build |
+| `npm run lint`     | Run ESLint       |
+| `npm test`         | Run unit tests   |
+| `npm run test:e2e` | Run E2E tests    |
 
 ## Backend
 
