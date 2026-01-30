@@ -1,0 +1,36 @@
+# Dependencies
+node_modules
+package-lock.json
+
+# Build outputs
+.next
+out
+build
+dist
+
+# Coverage
+coverage
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode
+.idea
+
+# Playwright
+test-results
+playwright-report
+playwright/.cache
+
+# Generated files
+next-env.d.ts
