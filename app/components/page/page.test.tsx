@@ -1,13 +1,31 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import Home from "./page";
-import { apiGet } from "@/lib/api";
+import { apiGet, uploadFile } from "@/lib/api";
 
 // Mock the API module
 jest.mock("@/lib/api", () => ({
   apiGet: jest.fn(),
+  uploadFile: jest.fn(),
 }));
 
 const mockedApiGet = apiGet as jest.MockedFunction<typeof apiGet>;
+const mockedUploadFile = uploadFile as jest.MockedFunction<typeof uploadFile>;
+
+function createMockFile(name: string): File {
+  return new File(["{}"], name, { type: "application/json" });
+}
+
+function createDragEvent(
+  files: File[]
+): Partial<React.DragEvent<HTMLDivElement>> {
+  return {
+    preventDefault: jest.fn(),
+    stopPropagation: jest.fn(),
+    dataTransfer: {
+      files: files as unknown as FileList,
+    } as DataTransfer,
+  };
+}
 
 describe("Home Page", () => {
   beforeEach(() => {
@@ -28,22 +46,18 @@ describe("Home Page", () => {
   });
 
   describe("Connected State", () => {
-    it("should display connected status and backend message when API call succeeds", async () => {
+    it("should display connected status when API call succeeds", async () => {
       // Arrange: Mock successful API response
-      const mockResponse = { message: "Hello from the backend!" };
-      mockedApiGet.mockResolvedValue(mockResponse);
+      mockedApiGet.mockResolvedValue({ message: "Hello from the backend!" });
 
       // Act: Render the component
       render(<Home />);
 
       // Assert: Wait for the connected state to appear
       await waitFor(() => {
-        expect(screen.getByText("Connected")).toBeInTheDocument();
+        expect(screen.getByText("Connected to API")).toBeInTheDocument();
       });
 
-      expect(
-        screen.getByText("Backend says: Hello from the backend!")
-      ).toBeInTheDocument();
       expect(
         screen.queryByText("Connecting to backend...")
       ).not.toBeInTheDocument();
@@ -137,6 +151,87 @@ describe("Home Page", () => {
       const mainElement = container.querySelector("main");
       expect(mainElement).toBeInTheDocument();
       expect(mainElement).toHaveClass("flex", "min-h-screen");
+    });
+  });
+
+  describe("Keyboard Submission", () => {
+    it("should trigger upload when Enter is pressed with file selected", async () => {
+      mockedApiGet.mockResolvedValue({ message: "Connected" });
+      mockedUploadFile.mockResolvedValue({
+        symbol: "^AXJO",
+        name: "S&P/ASX 200",
+        price: 8949.48,
+        change: -1.7882,
+        change_percent: -0.019918,
+        day_high: 8972.83,
+        day_low: 8927.76,
+        previous_close: 8951.27,
+        timestamp: "(current UTC time)",
+      });
+
+      render(<Home />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Connected to API")).toBeInTheDocument();
+      });
+
+      const dropZone = screen.getByTestId("file-drop-zone");
+      const jsonFile = createMockFile("test.json");
+
+      fireEvent.drop(dropZone, createDragEvent([jsonFile]));
+
+      expect(screen.getByTestId("submit-button")).toHaveAttribute(
+        "data-state",
+        "ready"
+      );
+
+      fireEvent.keyDown(document, { key: "Enter" });
+
+      await waitFor(() => {
+        expect(mockedUploadFile).toHaveBeenCalledWith("/upload", jsonFile);
+      });
+    });
+
+    it("should not trigger upload when Enter is pressed without file", async () => {
+      mockedApiGet.mockResolvedValue({ message: "Connected" });
+
+      render(<Home />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Connected to API")).toBeInTheDocument();
+      });
+
+      fireEvent.keyDown(document, { key: "Enter" });
+
+      expect(mockedUploadFile).not.toHaveBeenCalled();
+    });
+
+    it("should not trigger upload when Enter is pressed during upload", async () => {
+      mockedApiGet.mockResolvedValue({ message: "Connected" });
+      mockedUploadFile.mockImplementation(() => new Promise(() => {}));
+
+      render(<Home />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Connected to API")).toBeInTheDocument();
+      });
+
+      const dropZone = screen.getByTestId("file-drop-zone");
+      const jsonFile = createMockFile("test.json");
+
+      fireEvent.drop(dropZone, createDragEvent([jsonFile]));
+      fireEvent.click(screen.getByTestId("submit-button"));
+
+      await waitFor(() => {
+        expect(screen.getByTestId("submit-button")).toHaveAttribute(
+          "data-state",
+          "uploading"
+        );
+      });
+
+      fireEvent.keyDown(document, { key: "Enter" });
+
+      expect(mockedUploadFile).toHaveBeenCalledTimes(1);
     });
   });
 });
